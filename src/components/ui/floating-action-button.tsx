@@ -25,13 +25,13 @@ export function FloatingActionButton({
       )}
     >
       <MaterialSymbol
-        className="mb-1"
+        className="mb-1 text-white"
         filled
         name={icon}
         opticalSize={30}
         weight={500}
       />
-      <span className="font-label text-[10px] font-semibold tracking-tight md:text-[11px]">
+      <span className="font-label text-[10px] font-semibold tracking-tight md:text-[11px] text-white">
         {label}
       </span>
     </Link>

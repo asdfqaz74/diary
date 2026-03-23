@@ -33,8 +33,12 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
           🪷
         </div>
         <div>
-          <p className="text-lg font-bold text-primary">오늘의 마음을 기록해보세요</p>
-          <p className="font-label text-sm text-on-surface-variant">기록 전문가</p>
+          <p className="text-lg font-bold text-primary">
+            오늘의 마음을 기록해보세요
+          </p>
+          <p className="font-label text-sm text-on-surface-variant">
+            기록 전문가
+          </p>
         </div>
       </div>
 
@@ -51,7 +55,11 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
                 aria-label={`사이드바: ${item.label}`}
                 className="flex items-center gap-4 rounded-[1.2rem] px-4 py-4 text-left text-on-surface-variant"
               >
-                <MaterialSymbol name={item.icon} opticalSize={24} weight={350} />
+                <MaterialSymbol
+                  name={item.icon}
+                  opticalSize={24}
+                  weight={350}
+                />
                 <span className="text-lg">{item.label}</span>
               </button>
             );
@@ -71,7 +79,9 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
               )}
             >
               <MaterialSymbol
-                className={isActive ? "text-primary" : "text-on-surface-variant"}
+                className={
+                  isActive ? "text-primary" : "text-on-surface-variant"
+                }
                 name={item.icon}
                 opticalSize={24}
                 weight={350}
@@ -93,8 +103,12 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
             : "bg-primary text-on-primary hover:bg-primary-dim",
         )}
       >
-        <MaterialSymbol filled={isCompose} name={isHomeRoute(pathname) ? "edit" : "add"} />
-        <span>새 일기 쓰기</span>
+        <MaterialSymbol
+          filled={isCompose}
+          name={isHomeRoute(pathname) ? "edit" : "add"}
+          className="text-white"
+        />
+        <span className="text-white">새 일기 쓰기</span>
       </Link>
     </aside>
   );
