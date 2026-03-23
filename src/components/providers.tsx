@@ -32,7 +32,7 @@ export function Providers({ children }: ProvidersProps) {
         {children}
         <ReactQueryDevtools
           initialIsOpen={false}
-          buttonPosition="bottom-right"
+          buttonPosition="bottom-left"
         />
       </QueryClientProvider>
     </JotaiProvider>

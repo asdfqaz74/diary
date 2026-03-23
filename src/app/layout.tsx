@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope, Noto_Serif_KR } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { AppShell } from "@/components/ui/app-shell";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-diary-serif",
+  weight: ["400", "700", "900"],
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-diary-label",
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Diary Starter",
-  description:
-    "Server-first Next.js diary starter with Jotai and TanStack Query.",
+  title: "명상 메모아",
+  description: "아날로그 저널 감성으로 기록하는 명상 일기 앱.",
 };
 
 export default function RootLayout({
@@ -26,11 +28,19 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ko-KR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="ko"
+      className={`${notoSerifKr.variable} ${manrope.variable} h-full antialiased`}
     >
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=optional"
+        />
+      </head>
       <body className="min-h-full bg-background text-foreground">
-        <Providers>{children}</Providers>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );
