@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Diary Starter
+
+Server-first diary app starter built with Next.js App Router, TypeScript, Tailwind CSS, Jotai, and TanStack Query.
+
+## Stack
+
+- Next.js 16 App Router with `src/`
+- React 19 + TypeScript
+- Tailwind CSS 4
+- Jotai for client-only shared UI state
+- TanStack Query for interactive client fetching and cache
+- Vitest + React Testing Library
+
+## Prerequisites
+
+This project pins its toolchain with Volta:
+
+```bash
+volta install node@22.17.0
+volta install yarn@1.22.22
+```
+
+Once those tools are installed, Volta will automatically use the pinned versions from `package.json`.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
+yarn install
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `yarn dev`: start the local development server
+- `yarn build`: create a production build
+- `yarn start`: run the production build locally
+- `yarn lint`: run ESLint
+- `yarn typecheck`: run TypeScript type checks
+- `yarn test`: run the Vitest suite
 
-## Learn More
+## Project Notes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- The landing page demonstrates an async server component for the default diary snapshot.
+- `/api/reflection-prompt` is a small route handler used by a TanStack Query client component.
+- Shared workspace mode is stored in Jotai rather than mirroring server data into client state.
