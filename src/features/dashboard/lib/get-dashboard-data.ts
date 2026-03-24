@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import {
   addDays,
   addMonths,
+  canViewEntryDate,
   endOfMonth,
   formatEnglishDateLabel,
   formatKoreanLongDate,
@@ -53,6 +54,7 @@ function buildCalendarMonth(
   monthDate: Date,
   entryDates: Set<string>,
   activeDate: string,
+  todayIso: string,
 ): CalendarMonth {
   const monthStart = startOfMonth(monthDate);
   const monthEnd = endOfMonth(monthDate);
@@ -66,11 +68,17 @@ function buildCalendarMonth(
     current = addDays(current, 1)
   ) {
     const isoDate = toIsoDate(current);
+    const hasEntry = entryDates.has(isoDate);
 
     days.push({
       dayNumber: current.getUTCDate(),
-      hasEntry: entryDates.has(isoDate),
+      hasEntry,
       isActive: isoDate === activeDate,
+      isDisabled: !canViewEntryDate({
+        entryDate: isoDate,
+        hasEntry,
+        todayIso,
+      }),
       isMuted: current.getUTCMonth() !== monthStart.getUTCMonth(),
       key: isoDate,
     });
@@ -171,7 +179,6 @@ export const getDashboardData = cache(async (): Promise<DashboardData> => {
   const calendarRangeStart = toIsoDate(
     addDays(startOfMonth(monthDates[0]), -6),
   );
-  const calendarRangeEnd = toIsoDate(addDays(endOfMonth(monthDates[2]), 6));
 
   const [calendarResult, recentResult, moodResult] = await Promise.all([
     supabase
@@ -179,18 +186,20 @@ export const getDashboardData = cache(async (): Promise<DashboardData> => {
       .select("entry_date")
       .eq("user_id", user.id)
       .gte("entry_date", calendarRangeStart)
-      .lte("entry_date", calendarRangeEnd)
+      .lte("entry_date", todayIso)
       .order("entry_date"),
     supabase
       .from("entries")
       .select("*")
       .eq("user_id", user.id)
+      .lte("entry_date", todayIso)
       .order("entry_date", { ascending: false })
       .limit(4),
     supabase
       .from("entries")
       .select("*")
       .eq("user_id", user.id)
+      .lte("entry_date", todayIso)
       .order("entry_date", { ascending: false })
       .limit(7),
   ]);
@@ -224,7 +233,7 @@ export const getDashboardData = cache(async (): Promise<DashboardData> => {
   return {
     activeMonthIndex: activeMonthIndex >= 0 ? activeMonthIndex : 1,
     calendarMonths: monthDates.map((monthDate) =>
-      buildCalendarMonth(monthDate, entryDates, todayIso),
+      buildCalendarMonth(monthDate, entryDates, todayIso, todayIso),
     ),
     dateLabel: `${formatKoreanLongDate(todayIso, timezone)} • ${latestWeather}`,
     headline: `${getKoreanTimeGreeting(timezone)},\n${displayNameWithHonorific}.`,

@@ -37,7 +37,7 @@ export function EntryDetailScreen({
   deleteAction,
 }: EntryDetailScreenProps) {
   const primaryActionLabel =
-    data.kind === "entry" ? "수정하기" : "이 날짜에 기록 쓰기";
+    data.kind === "entry" ? "수정하기" : "오늘 기록 쓰기";
 
   return (
     <main className="px-6 py-8 md:px-12 md:py-12 lg:px-16 lg:py-16">
@@ -104,7 +104,7 @@ export function EntryDetailScreen({
               </div>
               <Link
                 href="/"
-                className="font-label text-sm font-semibold text-primary underline-offset-4 hover:underline hover:scale-105 active:scale-95 duration-150 transition-transform"
+                className="font-label text-sm font-semibold text-primary underline-offset-4 transition-transform duration-150 hover:scale-105 hover:underline active:scale-95"
               >
                 홈으로 돌아가기
               </Link>
@@ -116,17 +116,17 @@ export function EntryDetailScreen({
               <MaterialSymbol name="book_2" opticalSize={30} weight={350} />
             </div>
             <h2 className="mt-8 font-headline text-4xl font-bold text-on-surface">
-              아직 이 날짜의 기록이 없어요
+              오늘 기록이 아직 없어요
             </h2>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-on-surface-variant">
-              과거와 미래 날짜도 자유롭게 남길 수 있습니다. 이 날짜에 첫 기록을
-              쓰고 싶다면 바로 작성 화면으로 이동해 보세요.
+              오늘의 마음을 천천히 적어보세요. 지금 떠오르는 감정과 풍경을
+              한 문장부터 남길 수 있어요.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
               <ActionLink
                 href={data.editHref}
                 icon="edit_note"
-                label="이 날짜에 기록 쓰기"
+                label="오늘 기록 쓰기"
               />
               <Link
                 href="/"

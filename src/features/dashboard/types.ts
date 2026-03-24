@@ -7,6 +7,7 @@ export type CalendarDay = {
   dayNumber: number;
   hasEntry?: boolean;
   isActive?: boolean;
+  isDisabled?: boolean;
   isMuted?: boolean;
   key: string;
 };

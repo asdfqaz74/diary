@@ -45,7 +45,7 @@ export async function DashboardScreen() {
                     아직 저장된 기록이 없습니다
                   </h4>
                   <p className="mt-4 max-w-2xl text-lg leading-8 text-on-surface-variant">
-                    오른쪽 아래의 버튼이나 오늘 날짜를 눌러 첫 기록을 써보세요.
+                    오른쪽 아래 버튼이나 오늘 날짜를 눌러 첫 기록을 남겨보세요.
                   </p>
                 </Card>
               )}

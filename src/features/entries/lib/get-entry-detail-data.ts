@@ -1,10 +1,13 @@
 import "server-only";
 
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import { requireUser } from "@/lib/auth";
 import {
+  canViewEntryDate,
   formatEnglishWeekdayPeriodForDate,
   formatKoreanEditorDate,
+  getTodayIsoDate,
 } from "@/lib/date";
 import { getPaperTintClasses } from "@/lib/paper-tint";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -40,6 +43,19 @@ export const getEntryDetailData = cache(
     ]);
 
     const timezone = profileResult.data?.timezone ?? "Asia/Seoul";
+    const todayIso = getTodayIsoDate(timezone);
+    const hasEntry = Boolean(entryResult.data);
+
+    if (
+      !canViewEntryDate({
+        entryDate,
+        hasEntry,
+        todayIso,
+      })
+    ) {
+      notFound();
+    }
+
     const dateLabel = formatKoreanEditorDate(entryDate, timezone);
     const subtitle = formatEnglishWeekdayPeriodForDate(entryDate, timezone);
     const editHref = `/entries/${entryDate}/edit`;

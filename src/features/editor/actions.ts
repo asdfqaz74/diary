@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
+import { canEditEntryDate, getTodayIsoDate } from "@/lib/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   DraftSaveInput,
@@ -10,13 +11,11 @@ import type {
   PublishDraftResult,
 } from "@/features/editor/types";
 
-type DeleteEntryInput = {
+type DraftAccessContext = {
   entryDate: string;
-};
-
-type DeleteEntryResult = {
-  message?: string;
-  ok: boolean;
+  existingEntryId: string | null;
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+  todayIso: string;
 };
 
 async function getCatalogSnapshots(
@@ -62,13 +61,79 @@ function revalidateEntryPaths(entryDate: string) {
   revalidatePath("/entries/new");
 }
 
+async function getDraftAccessContext(
+  draftId: string,
+  userId: string,
+): Promise<DraftAccessContext | null> {
+  const supabase = await createSupabaseServerClient();
+
+  const [profileResult, draftResult] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("timezone")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("entry_drafts")
+      .select("entry_date, published_entry_id")
+      .eq("id", draftId)
+      .eq("is_active", true)
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  if (!draftResult.data) {
+    return null;
+  }
+
+  const timezone = profileResult.data?.timezone ?? "Asia/Seoul";
+  const todayIso = getTodayIsoDate(timezone);
+  const { data: existingEntry } = await supabase
+    .from("entries")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("entry_date", draftResult.data.entry_date)
+    .maybeSingle();
+
+  return {
+    entryDate: draftResult.data.entry_date,
+    existingEntryId:
+      draftResult.data.published_entry_id ?? existingEntry?.id ?? null,
+    supabase,
+    todayIso,
+  };
+}
+
 async function persistDraftChanges(
   input: DraftSaveInput,
   statusLabel: string,
   failureMessage: string,
 ) {
   const user = await requireUser();
-  const supabase = await createSupabaseServerClient();
+  const accessContext = await getDraftAccessContext(input.draftId, user.id);
+
+  if (!accessContext) {
+    return {
+      message: failureMessage,
+      ok: false as const,
+      statusLabel,
+    };
+  }
+
+  if (
+    !canEditEntryDate({
+      entryDate: accessContext.entryDate,
+      hasEntry: Boolean(accessContext.existingEntryId),
+      todayIso: accessContext.todayIso,
+    })
+  ) {
+    return {
+      message: "이 날짜의 기록은 수정할 수 없습니다.",
+      ok: false as const,
+      statusLabel,
+    };
+  }
+
   const snapshots = await getCatalogSnapshots(
     input.moodId,
     input.weatherId,
@@ -83,7 +148,7 @@ async function persistDraftChanges(
     };
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await accessContext.supabase
     .from("entry_drafts")
     .update({
       body: input.body,
@@ -161,13 +226,11 @@ export async function saveDraftAction(
   });
 
   if (error || !entryId) {
-    const message =
-      error?.code === "23505"
-        ? "이미 같은 날짜의 기록이 존재합니다."
-        : "기록 저장에 실패했습니다.";
-
     return {
-      message,
+      message:
+        error?.code === "23505"
+          ? "이미 같은 날짜의 기록이 존재합니다."
+          : "기록 저장에 실패했습니다.",
       ok: false,
     };
   }
@@ -184,28 +247,4 @@ export async function publishDraftAction(
   input: PublishDraftInput,
 ): Promise<PublishDraftResult> {
   return saveDraftAction(input);
-}
-
-export async function deleteEntryAction(
-  input: DeleteEntryInput,
-): Promise<DeleteEntryResult> {
-  await requireUser();
-  const supabase = await createSupabaseServerClient();
-
-  const { error } = await supabase.rpc("delete_entry_for_date", {
-    p_entry_date: input.entryDate,
-  });
-
-  if (error) {
-    return {
-      message: "기록 삭제에 실패했습니다.",
-      ok: false,
-    };
-  }
-
-  revalidateEntryPaths(input.entryDate);
-
-  return {
-    ok: true,
-  };
 }

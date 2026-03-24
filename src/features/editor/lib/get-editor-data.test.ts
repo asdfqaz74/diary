@@ -2,24 +2,39 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const {
   createSupabaseServerClientMock,
+  mockNotFound,
   requireUserMock,
   updateMock,
 } = vi.hoisted(() => ({
   createSupabaseServerClientMock: vi.fn(),
+  mockNotFound: vi.fn(() => {
+    throw new Error("NOT_FOUND");
+  }),
   requireUserMock: vi.fn(async () => ({ id: "user-1" })),
   updateMock: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  notFound: mockNotFound,
 }));
 
 vi.mock("@/lib/auth", () => ({
   requireUser: requireUserMock,
 }));
 
-vi.mock("@/lib/date", () => ({
-  formatEnglishWeekdayPeriodForDate: vi.fn(() => "TUESDAY AFTERNOON"),
-  formatKoreanEditorDate: vi.fn(() => "2026년 3월 24일"),
-  getCurrentKoreanTime: vi.fn(() => "오후 2:45"),
-  getTodayIsoDate: vi.fn(() => "2026-03-24"),
-}));
+vi.mock("@/lib/date", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/date")>(
+    "@/lib/date",
+  );
+
+  return {
+    ...actual,
+    formatEnglishWeekdayPeriodForDate: vi.fn(() => "TUESDAY AFTERNOON"),
+    formatKoreanEditorDate: vi.fn(() => "2026년 3월 24일"),
+    getCurrentKoreanTime: vi.fn(() => "오후 2:45"),
+    getTodayIsoDate: vi.fn(() => "2026-03-24"),
+  };
+});
 
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: createSupabaseServerClientMock,
@@ -280,5 +295,31 @@ describe("getEditorData", () => {
     expect(result.draftId).toBe("draft-1");
     expect(result.initialDraft.title).toBe("초안 제목");
     expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  it("throws notFound for a past date without an entry", async () => {
+    createSupabaseServerClientMock.mockResolvedValue(
+      createMockSupabaseClient({
+        activeDraftSequence: [null],
+        existingEntry: null,
+      }),
+    );
+
+    await expect(getEditorData("2026-03-20")).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("throws notFound for a future date even if a future entry exists", async () => {
+    createSupabaseServerClientMock.mockResolvedValue(
+      createMockSupabaseClient({
+        activeDraftSequence: [null],
+        existingEntry: {
+          ...entryBase,
+          entry_date: "2026-03-28",
+          id: "future-entry-1",
+        },
+      }),
+    );
+
+    await expect(getEditorData("2026-03-28")).rejects.toThrow("NOT_FOUND");
   });
 });

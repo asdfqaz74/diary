@@ -67,7 +67,7 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
             {activeMonth.label}
           </h3>
           <p className="mt-2 font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant">
-            {isPending ? "달력을 불러오는 중" : "기록이 남은 날짜를 확인해보세요"}
+            {isPending ? "달력을 불러오는 중" : "기록이 있는 날짜만 열 수 있어요"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -108,42 +108,60 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
 
         {activeMonth.days.map((day) => {
           const weekdayIndex = new Date(`${day.key}T00:00:00Z`).getUTCDay();
-          const ariaLabel = day.isActive
-            ? `선택한 날짜 ${day.dayNumber}일`
-            : `${day.dayNumber}일`;
+          const sharedClasses = cn(
+            "relative flex h-12 w-12 items-center justify-center rounded-[1rem] text-xl transition md:h-14 md:w-14 md:rounded-[1.15rem] md:text-2xl",
+            day.isActive
+              ? "ambient-shadow bg-primary"
+              : day.isDisabled
+                ? "cursor-default opacity-55"
+                : "bg-transparent hover:bg-surface-container-low",
+          );
+          const dayNumber = (
+            <span
+              className={cn(
+                "calendar-day-number relative z-10",
+                getDayNumberClass(weekdayIndex, day.isActive, day.isMuted),
+              )}
+            >
+              {day.dayNumber}
+            </span>
+          );
+          const dot = day.hasEntry ? (
+            <span
+              className={cn(
+                "absolute bottom-1.5 h-1.5 w-1.5 rounded-full",
+                day.isActive ? "bg-on-primary" : "bg-primary",
+              )}
+            />
+          ) : null;
 
           return (
             <div
               key={day.key}
               className="flex h-16 items-center justify-center md:h-20"
             >
-              <Link
-                aria-label={ariaLabel}
-                href={`/entries/${day.key}`}
-                className={cn(
-                  "relative flex h-12 w-12 items-center justify-center rounded-[1rem] text-xl transition md:h-14 md:w-14 md:rounded-[1.15rem] md:text-2xl",
-                  day.isActive
-                    ? "ambient-shadow bg-primary"
-                    : "bg-transparent hover:bg-surface-container-low",
-                )}
-              >
-                <span
-                  className={cn(
-                    "calendar-day-number relative z-10",
-                    getDayNumberClass(weekdayIndex, day.isActive, day.isMuted),
-                  )}
+              {day.isDisabled ? (
+                <div
+                  aria-disabled="true"
+                  className={sharedClasses}
                 >
-                  {day.dayNumber}
-                </span>
-                {day.hasEntry ? (
-                  <span
-                    className={cn(
-                      "absolute bottom-1.5 h-1.5 w-1.5 rounded-full",
-                      day.isActive ? "bg-on-primary" : "bg-primary",
-                    )}
-                  />
-                ) : null}
-              </Link>
+                  {dayNumber}
+                  {dot}
+                </div>
+              ) : (
+                <Link
+                  aria-label={
+                    day.isActive
+                      ? `선택된 날짜 ${day.dayNumber}일`
+                      : `${day.dayNumber}일`
+                  }
+                  href={`/entries/${day.key}`}
+                  className={sharedClasses}
+                >
+                  {dayNumber}
+                  {dot}
+                </Link>
+              )}
             </div>
           );
         })}

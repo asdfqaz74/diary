@@ -32,7 +32,7 @@ export function EntryPreviewCard({ index, preview }: EntryPreviewCardProps) {
       aria-label={`${preview.dateLabel} 일기 열기`}
       href={`/entries/${preview.entryDate}`}
       className={cn(
-        "block self-start overflow-hidden rounded-[1.75rem] bg-surface-container-lowest p-10 ambient-shadow transition-all hover:shadow-[0_12px_48px_rgba(48,51,48,0.08)] md:max-h-128 hover:scale-105 duration-200 ease-in-out",
+        "block self-start overflow-hidden rounded-[1.75rem] bg-surface-container-lowest p-10 ambient-shadow transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0_12px_48px_rgba(48,51,48,0.08)] md:max-h-128",
         preview.paperClassName,
         getTiltClass(`${preview.entryDate}-${preview.title}-${index}`),
       )}

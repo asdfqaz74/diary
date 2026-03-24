@@ -1,8 +1,9 @@
 import "server-only";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import {
+  canEditEntryDate,
   formatEnglishWeekdayPeriodForDate,
   formatKoreanEditorDate,
   getCurrentKoreanTime,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/date";
 import { getPaperTintClasses } from "@/lib/paper-tint";
 import type { Database } from "@/lib/supabase/database.types";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   EditorData,
   MoodOption,
@@ -237,7 +239,7 @@ function toEditorData(
     subtitle: formatEnglishWeekdayPeriodForDate(draft.entry_date, timezone),
     titlePlaceholder: "오늘의 제목...",
     weatherOptions: mapWeatherOptions(catalogs.weathers),
-    writingPlaceholder: "여기에 당신의 마음을 적어보세요...",
+    writingPlaceholder: "이곳에 당신의 진심을 담아보세요...",
   };
 }
 
@@ -254,7 +256,8 @@ export async function getEditorData(
     .maybeSingle();
 
   const timezone = profile?.timezone ?? "Asia/Seoul";
-  const entryDate = selectedDate ?? getTodayIsoDate(timezone);
+  const todayIso = getTodayIsoDate(timezone);
+  const entryDate = selectedDate ?? todayIso;
 
   const [moodResult, weatherResult, tintResult, activeDraft, existingEntry] =
     await Promise.all([
@@ -276,6 +279,16 @@ export async function getEditorData(
       getActiveDraftForDate(supabase, user.id, entryDate),
       getEntryForDate(supabase, user.id, entryDate),
     ]);
+
+  if (
+    !canEditEntryDate({
+      entryDate,
+      hasEntry: Boolean(existingEntry),
+      todayIso,
+    })
+  ) {
+    notFound();
+  }
 
   const catalogs: Catalogs = {
     moods: moodResult.data ?? [],

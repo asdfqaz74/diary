@@ -24,7 +24,7 @@ vi.mock("next/navigation", async () => {
 
 vi.mock("@/features/entries/lib/get-entry-detail-data", () => ({
   getEntryDetailData: vi.fn(async (entryDate: string) => ({
-    body: "햇빛을 따라가며 마음도 가볍게 정리됐다.",
+    body: "빛바랜 풍경을 보며 마음을 가볍게 정리했다.",
     dateLabel: "2026년 3월 24일",
     editHref: `/entries/${entryDate}/edit`,
     entryDate,
@@ -53,7 +53,9 @@ describe("entry detail page", () => {
       screen.getByRole("heading", { name: "2026년 3월 24일" }),
     ).toBeVisible();
     expect(screen.getByText("고요한 오후의 기록")).toBeVisible();
-    expect(screen.getByText("햇빛을 따라가며 마음도 가볍게 정리됐다.")).toBeVisible();
+    expect(
+      screen.getByText("빛바랜 풍경을 보며 마음을 가볍게 정리했다."),
+    ).toBeVisible();
     expect(
       screen.getByRole("link", { name: /수정하기/ }),
     ).toHaveAttribute("href", "/entries/2026-03-24/edit");

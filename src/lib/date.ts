@@ -1,11 +1,19 @@
 import "server-only";
 
+export type EntryDateRelation = "past" | "today" | "future";
+
 type DateParts = {
   day: string;
   hour: string;
   month: string;
   weekday: string;
   year: string;
+};
+
+type EntryDateAccessOptions = {
+  entryDate: string;
+  hasEntry: boolean;
+  todayIso: string;
 };
 
 function getDateTimeParts(date: Date, timeZone: string): DateParts {
@@ -75,7 +83,9 @@ export function addDays(date: Date, days: number) {
 }
 
 export function addMonths(date: Date, months: number) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1),
+  );
 }
 
 export function startOfMonth(date: Date) {
@@ -163,7 +173,58 @@ export function getKoreanTimeGreeting(timeZone: string) {
 export function getDayDifference(fromIso: string, toIso: string) {
   const from = parseIsoDate(fromIso);
   const to = parseIsoDate(toIso);
-  return Math.round(
-    (from.getTime() - to.getTime()) / (24 * 60 * 60 * 1000),
-  );
+  return Math.round((from.getTime() - to.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+export function getEntryDateRelation(
+  entryDate: string,
+  todayIso: string,
+): EntryDateRelation {
+  const difference = getDayDifference(todayIso, entryDate);
+
+  if (difference === 0) {
+    return "today";
+  }
+
+  return difference > 0 ? "past" : "future";
+}
+
+export function canViewEntryDate({
+  entryDate,
+  hasEntry,
+  todayIso,
+}: EntryDateAccessOptions) {
+  const relation = getEntryDateRelation(entryDate, todayIso);
+
+  if (relation === "today") {
+    return true;
+  }
+
+  if (relation === "past") {
+    return hasEntry;
+  }
+
+  return false;
+}
+
+export function canEditEntryDate({
+  entryDate,
+  hasEntry,
+  todayIso,
+}: EntryDateAccessOptions) {
+  const relation = getEntryDateRelation(entryDate, todayIso);
+
+  if (relation === "today") {
+    return true;
+  }
+
+  if (relation === "past") {
+    return hasEntry;
+  }
+
+  return false;
+}
+
+export function canCreateEntryDate(entryDate: string, todayIso: string) {
+  return getEntryDateRelation(entryDate, todayIso) === "today";
 }
