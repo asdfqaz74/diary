@@ -34,6 +34,7 @@ export type EditorMeta = {
 export type EditorData = {
   dateLabel: string;
   draftId: string;
+  entryDate: string;
   initialDraft: JournalDraft;
   meta: EditorMeta;
   moodOptions: MoodOption[];
@@ -44,30 +45,34 @@ export type EditorData = {
   writingPlaceholder: string;
 };
 
-export type AutosaveDraftInput = JournalDraft & {
+export type DraftSaveInput = JournalDraft & {
   draftId: string;
 };
 
-export type AutosaveDraftResult = {
+export type DraftSaveResult = {
   message?: string;
   ok: boolean;
   statusLabel: string;
 };
 
-export type PublishDraftInput = {
-  draftId: string;
-};
+export type SaveDraftInput = DraftSaveInput;
 
-export type PublishDraftResult = {
+export type SaveDraftResult = {
   message?: string;
   ok: boolean;
   redirectTo?: string;
 };
 
-export type AutosaveDraftAction = (
-  input: AutosaveDraftInput,
-) => Promise<AutosaveDraftResult>;
+export type DraftSaveAction = (
+  input: DraftSaveInput,
+) => Promise<DraftSaveResult>;
 
-export type PublishDraftAction = (
-  input: PublishDraftInput,
-) => Promise<PublishDraftResult>;
+export type SaveDraftAction = (
+  input: SaveDraftInput,
+) => Promise<SaveDraftResult>;
+
+export type PublishDraftInput = SaveDraftInput;
+
+export type PublishDraftResult = SaveDraftResult;
+
+export type PublishDraftAction = SaveDraftAction;

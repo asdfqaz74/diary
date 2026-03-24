@@ -1,6 +1,5 @@
 export type StreakSummary = {
   label: string;
-  statLabel: string;
   value: string;
 };
 
@@ -30,10 +29,13 @@ export type DiaryEntryPreview = {
   dateLabel: string;
   excerpt: string;
   icon: string;
+  entryDate: string;
+  paperClassName: string;
   title: string;
 };
 
 export type DashboardData = {
+  activeMonthIndex: number;
   calendarMonths: CalendarMonth[];
   dateLabel: string;
   headline: string;

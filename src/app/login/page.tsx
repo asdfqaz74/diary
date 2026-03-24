@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
+import { LoginScreen } from "@/features/auth/components/login-screen";
 import { getOptionalUser } from "@/lib/auth";
 import { hasSupabasePublicEnv } from "@/lib/supabase/env";
-import { LoginScreen } from "@/features/auth/components/login-screen";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -13,9 +13,9 @@ type LoginPageProps = {
 function getErrorMessage(error?: string) {
   switch (error) {
     case "missing_env":
-      return "Supabase 환경변수가 없어서 보호된 페이지를 열 수 없습니다.";
+      return "로그인에 필요한 환경 설정이 아직 비어 있어요.";
     case "oauth_callback":
-      return "OAuth 콜백 처리 중 오류가 발생했습니다.";
+      return "로그인 확인 중 문제가 생겼어요. 한 번 더 시도해 주세요.";
     default:
       return undefined;
   }

@@ -26,7 +26,7 @@ export function JournalPaper({
   return (
     <div
       className={cn(
-        "paper-texture flex min-h-[44rem] flex-1 flex-col rounded-[1.75rem] p-8 md:p-12",
+        "paper-texture flex min-h-176 flex-1 flex-col rounded-tr-2xl p-8 md:p-12",
         paperClassName,
       )}
     >
@@ -47,7 +47,7 @@ export function JournalPaper({
           onBodyChange(event.target.value);
         }}
         placeholder={writingPlaceholder}
-        className="writing-lines mt-8 min-h-[30rem] flex-1 border-none bg-transparent p-0 text-xl leading-[1.8] text-on-surface-variant outline-none placeholder:italic placeholder:text-outline-variant/45"
+        className="writing-lines mt-8 min-h-[30rem] flex-1 border-none bg-transparent p-0 text-xl leading-[2.25rem] text-on-surface-variant outline-none placeholder:italic placeholder:text-outline-variant/45"
       />
 
       <EditorMetaFooter

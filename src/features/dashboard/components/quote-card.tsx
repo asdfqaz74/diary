@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { MaterialSymbol } from "@/components/ui/material-symbol";
+import { QuoteSymbol } from "@/features/dashboard/components/dashboard-symbols";
 
 type QuoteCardProps = {
   author: string;
@@ -9,13 +9,7 @@ type QuoteCardProps = {
 export function QuoteCard({ author, quote }: QuoteCardProps) {
   return (
     <Card className="relative overflow-hidden p-8" tone="ink">
-      <MaterialSymbol
-        className="absolute -right-3 -top-2 opacity-10"
-        filled
-        name="format_quote"
-        opticalSize={92}
-        weight={500}
-      />
+      <QuoteSymbol className="absolute -right-3 -top-2 h-[92px] w-[92px] opacity-10" />
       <p className="max-w-xs whitespace-pre-line font-headline text-3xl italic leading-[1.55] text-on-primary">
         {quote}
       </p>

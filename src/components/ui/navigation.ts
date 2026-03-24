@@ -1,25 +1,34 @@
+export type NavScope = "records" | "compose" | "exact" | "none";
+
 export type NavItem = {
+  activeOn: NavScope;
   disabled?: boolean;
   href: string;
   icon: string;
   label: string;
 };
 
+const dateRoutePattern = /^\/entries\/\d{4}-\d{2}-\d{2}$/;
+const dateEditRoutePattern = /^\/entries\/\d{4}-\d{2}-\d{2}\/edit$/;
+
 export const sidebarItems: NavItem[] = [
   {
+    activeOn: "records",
     href: "/",
     icon: "book_2",
     label: "내 일기",
   },
   {
+    activeOn: "none",
     disabled: true,
-    href: "/calendar",
-    icon: "calendar_today",
+    href: "#",
+    icon: "calendar_month",
     label: "달력",
   },
   {
+    activeOn: "none",
     disabled: true,
-    href: "/settings",
+    href: "#",
     icon: "settings",
     label: "설정",
   },
@@ -27,43 +36,53 @@ export const sidebarItems: NavItem[] = [
 
 export const bottomNavItems: NavItem[] = [
   {
-    href: "/entries/new",
-    icon: "edit_note",
-    label: "쓰기",
-  },
-  {
+    activeOn: "records",
     href: "/",
-    icon: "grid_view",
+    icon: "article",
     label: "기록",
   },
   {
-    disabled: true,
-    href: "/settings",
-    icon: "tune",
-    label: "설정",
+    activeOn: "compose",
+    href: "/entries/new",
+    icon: "edit",
+    label: "쓰기",
   },
 ];
+
+export function isAuthRoute(pathname: string) {
+  return pathname === "/login" || pathname.startsWith("/auth/");
+}
+
+export function isDateDetailRoute(pathname: string) {
+  return dateRoutePattern.test(pathname);
+}
+
+export function isDateEditRoute(pathname: string) {
+  return dateEditRoutePattern.test(pathname);
+}
+
+export function isRecordsRoute(pathname: string) {
+  return pathname === "/" || isDateDetailRoute(pathname);
+}
+
+export function isComposeRoute(pathname: string) {
+  return pathname === "/entries/new" || isDateEditRoute(pathname);
+}
 
 export function isHomeRoute(pathname: string) {
   return pathname === "/";
 }
 
-export function isComposeRoute(pathname: string) {
-  return pathname.startsWith("/entries/new");
-}
-
-export function isAuthRoute(pathname: string) {
-  return pathname.startsWith("/login") || pathname.startsWith("/auth");
-}
-
 export function isNavItemActive(item: NavItem, pathname: string) {
-  if (item.href === "/") {
-    return isHomeRoute(pathname);
+  switch (item.activeOn) {
+    case "records":
+      return isRecordsRoute(pathname);
+    case "compose":
+      return isComposeRoute(pathname);
+    case "exact":
+      return pathname === item.href;
+    case "none":
+    default:
+      return false;
   }
-
-  if (item.href === "/entries/new") {
-    return isComposeRoute(pathname);
-  }
-
-  return false;
 }

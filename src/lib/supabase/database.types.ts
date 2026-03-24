@@ -219,6 +219,18 @@ export type Database = {
         };
         Returns: number;
       };
+      delete_entry_for_date: {
+        Args: {
+          p_entry_date: string;
+        };
+        Returns: void;
+      };
+      save_entry_from_draft: {
+        Args: {
+          p_draft_id: string;
+        };
+        Returns: string;
+      };
       publish_entry_from_draft: {
         Args: {
           p_draft_id: string;

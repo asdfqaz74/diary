@@ -35,9 +35,9 @@
 ### `entry_drafts`
 
 - 작성 중 초안
-- 사용자당 active draft 1개만 허용
-- autosave 대상
-- publish 되면 `is_active=false`, `published_entry_id` 연결
+- 사용자당 날짜별 active draft 1개만 허용
+- 임시저장 대상
+- 최종 저장되면 `is_active=false`, `published_entry_id` 연결
 
 ### `entries`
 
@@ -76,21 +76,21 @@ DB 레벨에서는:
 
 앱 레벨에서는:
 
-- publish RPC 가 중복 생성 시 실패
+- 저장 RPC 가 같은 날짜의 기존 기록을 우선 update
 - UI 에서는 "오늘 기록은 이미 저장되었습니다." 메시지 표시
 
-## 왜 active draft 1개인가
+## 왜 날짜별 active draft 1개인가
 
 이 화면은 `오늘 쓰는 기록 한 장` 경험에 맞춰져 있습니다.
 
 DB 레벨에서는:
 
 - partial unique index  
-  `entry_drafts_one_active_per_user`
+  `entry_drafts_one_active_per_date`
 
 앱 레벨에서는:
 
-- `/entries/new` 진입 시 active draft 가 있으면 재사용
+- `/entries/[date]/edit` 진입 시 같은 날짜 active draft 가 있으면 재사용
 - 없으면 새로 생성
 
 ## RLS 정책 개요
@@ -129,9 +129,9 @@ owner-only 정책입니다.
 
 - `calculate_current_streak(user_id, as_of_date)` 함수 호출
 
-## publish 흐름
+## 저장 흐름
 
-`publish_entry_from_draft(draft_id)` 함수가 한 번에 처리합니다.
+`save_entry_from_draft(draft_id)` 함수가 한 번에 처리합니다.
 
 1. draft owner 확인
 2. `entries` insert

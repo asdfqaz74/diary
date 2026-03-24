@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { MaterialSymbol } from "@/components/ui/material-symbol";
 import type { WeatherOption } from "@/features/editor/types";
+import { WeatherSymbol } from "@/features/editor/components/weather-symbol";
 
 type WeatherPickerProps = {
   onSelect: (weatherId: string) => void;
@@ -28,16 +28,24 @@ export function WeatherPicker({
               onSelect(option.id);
             }}
             className={cn(
-              "rounded-full p-1 text-outline transition hover:text-primary",
-              isActive ? "text-primary" : "",
+              "relative flex h-11 w-11 items-center justify-center rounded-full transition duration-150 ease-out",
+              isActive
+                ? "scale-105 bg-primary-container text-primary shadow-[0_10px_24px_rgba(79,100,91,0.16)] ring-2 ring-white/20"
+                : "bg-white/8 text-white/65 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:bg-white/14 hover:text-white",
             )}
           >
-            <MaterialSymbol
+            <WeatherSymbol
+              className={cn(
+                "transition-transform duration-150",
+                isActive ? "scale-105" : "",
+              )}
               filled={isActive && option.icon === "cloud"}
               name={option.icon}
               opticalSize={28}
-              weight={350}
             />
+            {/* {isActive ? (
+              <span className="absolute -bottom-1 h-1.5 w-1.5 rounded-full bg-white" />
+            ) : null} */}
           </button>
         );
       })}

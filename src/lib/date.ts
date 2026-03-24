@@ -39,6 +39,15 @@ export function getTodayIsoDate(timeZone: string) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+export function isIsoDateString(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = parseIsoDate(value);
+  return toIsoDate(date) === value;
+}
+
 export function getCurrentKoreanTime(timeZone: string) {
   return new Intl.DateTimeFormat("ko-KR", {
     hour: "numeric",
@@ -118,6 +127,23 @@ export function formatEnglishWeekdayPeriod(timeZone: string) {
     hour < 12 ? "MORNING" : hour < 18 ? "AFTERNOON" : "EVENING";
 
   return `${parts.weekday.toUpperCase()} ${period}`;
+}
+
+export function formatEnglishWeekdayPeriodForDate(
+  isoDate: string,
+  timeZone: string,
+) {
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "long",
+  })
+    .format(parseIsoDate(isoDate))
+    .toUpperCase();
+  const hour = Number(getDateTimeParts(new Date(), timeZone).hour);
+  const period =
+    hour < 12 ? "MORNING" : hour < 18 ? "AFTERNOON" : "EVENING";
+
+  return `${weekday} ${period}`;
 }
 
 export function getKoreanTimeGreeting(timeZone: string) {

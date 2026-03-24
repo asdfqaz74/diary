@@ -27,9 +27,11 @@ export function PaperTintPicker({
               onSelect(option.id);
             }}
             className={cn(
-              "h-5 w-5 rounded-full transition",
+              "h-6 w-6 rounded-full transition duration-150 ease-out hover:scale-105",
               option.swatchClassName,
-              isActive ? "ring-2 ring-primary ring-offset-2 ring-offset-surface" : "",
+              isActive
+                ? "scale-110 shadow-[0_0_0_2px_rgba(255,255,255,0.92),0_10px_22px_rgba(0,0,0,0.16)]"
+                : "shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]",
             )}
           />
         );

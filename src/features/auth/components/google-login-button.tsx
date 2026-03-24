@@ -21,7 +21,7 @@ export function GoogleLoginButton({
           const env = getSupabasePublicEnv();
 
           if (!env) {
-            setErrorMessage("먼저 .env.local 에 Supabase 환경변수를 채워주세요.");
+            setErrorMessage("먼저 `.env.local`의 Supabase 환경 변수를 채워주세요.");
             return;
           }
 
@@ -37,10 +37,10 @@ export function GoogleLoginButton({
           });
 
           if (error) {
-            setErrorMessage("Google 로그인 연결에 실패했습니다.");
+            setErrorMessage("Google 로그인 연결에 실패했어요. 잠시 후 다시 시도해 주세요.");
           }
         } catch {
-          setErrorMessage("로그인 준비 중 오류가 발생했습니다.");
+          setErrorMessage("로그인 준비 중 문제가 생겼어요. 다시 시도해 주세요.");
         }
       })();
     });
@@ -54,7 +54,7 @@ export function GoogleLoginButton({
         disabled={isPending}
         className="flex w-full items-center justify-center rounded-full bg-primary px-6 py-4 font-label text-base font-semibold text-on-primary transition hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isPending ? "Google 로그인 연결 중..." : "Google로 시작하기"}
+        {isPending ? "Google 계정 연결 중..." : "Google로 시작하기"}
       </button>
       {errorMessage ? (
         <p className="font-label text-sm text-red-700">{errorMessage}</p>

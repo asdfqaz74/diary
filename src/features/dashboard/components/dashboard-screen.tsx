@@ -20,17 +20,20 @@ export async function DashboardScreen() {
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="space-y-16">
-            <CalendarCard months={data.calendarMonths} />
+            <CalendarCard
+              initialMonthIndex={data.activeMonthIndex}
+              months={data.calendarMonths}
+            />
 
             <section>
               <h3 className="ml-4 font-headline text-4xl font-bold text-primary">
                 최근 기록들
               </h3>
               {data.recentEntries.length > 0 ? (
-                <div className="mt-10 grid gap-10 xl:grid-cols-2">
+                <div className="mt-10 grid items-start gap-10 xl:grid-cols-2">
                   {data.recentEntries.map((entry, index) => (
                     <EntryPreviewCard
-                      key={`${entry.dateLabel}-${entry.title}`}
+                      key={`${entry.entryDate}-${entry.title}`}
                       index={index}
                       preview={entry}
                     />
@@ -42,8 +45,7 @@ export async function DashboardScreen() {
                     아직 저장된 기록이 없습니다
                   </h4>
                   <p className="mt-4 max-w-2xl text-lg leading-8 text-on-surface-variant">
-                    오른쪽 아래의 버튼이나 새 일기 쓰기 메뉴로 들어가 첫 기록을
-                    남겨보세요.
+                    오른쪽 아래의 버튼이나 오늘 날짜를 눌러 첫 기록을 써보세요.
                   </p>
                 </Card>
               )}

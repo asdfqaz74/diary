@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/ui/logout-button";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   isComposeRoute,
   isHomeRoute,
   isNavItemActive,
   sidebarItems,
 } from "@/components/ui/navigation";
-import { MaterialSymbol } from "@/components/ui/material-symbol";
+import { cn } from "@/lib/utils";
 
 type SidebarNavProps = {
   pathname: string;
@@ -30,15 +31,16 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
 
       <div className="mt-12 flex items-center gap-4 rounded-[1.75rem] bg-surface px-5 py-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f7dfab] text-2xl">
-          🧘
+          🪷
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-lg font-bold text-primary">
-            오늘의 마음을 기록해요
+            오늘의 마음을 기록하는 기록자
           </p>
           <p className="font-label text-sm text-on-surface-variant">
             기록 전문가
           </p>
+          <LogoutButton className="mt-3" />
         </div>
       </div>
 

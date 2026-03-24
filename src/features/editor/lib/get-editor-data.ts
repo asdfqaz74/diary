@@ -3,11 +3,12 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
 import {
-  formatEnglishWeekdayPeriod,
+  formatEnglishWeekdayPeriodForDate,
   formatKoreanEditorDate,
   getCurrentKoreanTime,
   getTodayIsoDate,
 } from "@/lib/date";
+import { getPaperTintClasses } from "@/lib/paper-tint";
 import type { Database } from "@/lib/supabase/database.types";
 import type {
   EditorData,
@@ -17,32 +18,19 @@ import type {
 } from "@/features/editor/types";
 
 type DraftRow = Database["public"]["Tables"]["entry_drafts"]["Row"];
+type EntryRow = Database["public"]["Tables"]["entries"]["Row"];
 type MoodCatalogRow = Database["public"]["Tables"]["mood_catalog"]["Row"];
 type WeatherCatalogRow = Database["public"]["Tables"]["weather_catalog"]["Row"];
 type PaperTintCatalogRow =
   Database["public"]["Tables"]["paper_tint_catalog"]["Row"];
 
-const tintClassMap: Record<
-  string,
-  Pick<PaperTintOption, "editorClassName" | "swatchClassName">
-> = {
-  mist: {
-    editorClassName: "bg-white/92",
-    swatchClassName: "bg-surface-container-lowest",
-  },
-  rose: {
-    editorClassName: "bg-rose-50/90",
-    swatchClassName: "bg-rose-100",
-  },
-  sage: {
-    editorClassName: "bg-emerald-50/88",
-    swatchClassName: "bg-emerald-100",
-  },
-  sky: {
-    editorClassName: "bg-sky-50/88",
-    swatchClassName: "bg-sky-100",
-  },
+type Catalogs = {
+  moods: MoodCatalogRow[];
+  tints: PaperTintCatalogRow[];
+  weathers: WeatherCatalogRow[];
 };
+
+const draftLookupRetryDelaysMs = [0, 25, 75, 150, 250] as const;
 
 function mapMoodOptions(rows: MoodCatalogRow[]): MoodOption[] {
   return rows.map((row) => ({
@@ -62,94 +50,176 @@ function mapWeatherOptions(rows: WeatherCatalogRow[]): WeatherOption[] {
 
 function mapTintOptions(rows: PaperTintCatalogRow[]): PaperTintOption[] {
   return rows.map((row) => ({
-    editorClassName: tintClassMap[row.code]?.editorClassName ?? "bg-white/92",
+    editorClassName: getPaperTintClasses(row.code).editorClassName,
     id: row.code,
     label: row.label,
-    swatchClassName:
-      tintClassMap[row.code]?.swatchClassName ?? "bg-surface-container-lowest",
+    swatchClassName: getPaperTintClasses(row.code).swatchClassName,
   }));
 }
 
-async function getOrCreateActiveDraft(
-  userId: string,
-  timezone: string,
-  moods: MoodCatalogRow[],
-  weathers: WeatherCatalogRow[],
-  tints: PaperTintCatalogRow[],
-) {
-  const supabase = await createSupabaseServerClient();
-  const { data: existingDraft } = await supabase
-    .from("entry_drafts")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("is_active", true)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (existingDraft) {
-    return existingDraft;
-  }
-
-  const defaultMood = moods[0];
-  const defaultWeather = weathers[0];
-  const defaultTint = tints[0];
+function getCatalogDefaults(catalogs: Catalogs) {
+  const defaultMood = catalogs.moods[0];
+  const defaultWeather = catalogs.weathers[0];
+  const defaultTint = catalogs.tints[0];
 
   if (!defaultMood || !defaultWeather || !defaultTint) {
     throw new Error("Catalog data is not seeded yet.");
   }
 
-  const entryDate = getTodayIsoDate(timezone);
+  return {
+    defaultMood,
+    defaultTint,
+    defaultWeather,
+  };
+}
 
-  const insertResult = await supabase
-    .from("entry_drafts")
-    .insert({
-      body: "",
-      entry_date: entryDate,
-      location_name: "서울, 대한민국",
-      mood_code: defaultMood.code,
-      mood_label_snapshot: defaultMood.label,
-      mood_score_snapshot: defaultMood.trend_score,
-      paper_tint_code: defaultTint.code,
-      paper_tint_label_snapshot: defaultTint.label,
-      title: "",
-      user_id: userId,
-      weather_code: defaultWeather.code,
-      weather_label_snapshot: defaultWeather.label,
-    })
-    .select("*")
-    .single();
-
-  if (!insertResult.error && insertResult.data) {
-    return insertResult.data;
-  }
-
-  const { data: duplicateDraft } = await supabase
+async function getActiveDraftForDate(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  entryDate: string,
+) {
+  const { data } = await supabase
     .from("entry_drafts")
     .select("*")
     .eq("user_id", userId)
+    .eq("entry_date", entryDate)
     .eq("is_active", true)
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (!duplicateDraft) {
-    throw insertResult.error;
+  return data ?? null;
+}
+
+async function getEntryForDate(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  entryDate: string,
+) {
+  const { data } = await supabase
+    .from("entries")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("entry_date", entryDate)
+    .maybeSingle();
+
+  return data ?? null;
+}
+
+async function repairDraftEntryLink(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  draft: DraftRow,
+  existingEntry: EntryRow | null,
+) {
+  if (!existingEntry || draft.published_entry_id) {
+    return draft;
   }
 
-  return duplicateDraft;
+  const { data, error } = await supabase
+    .from("entry_drafts")
+    .update({
+      published_entry_id: existingEntry.id,
+    })
+    .eq("id", draft.id)
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    return {
+      ...draft,
+      published_entry_id: existingEntry.id,
+    };
+  }
+
+  return data as DraftRow;
+}
+
+async function createDraftForDate(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  entryDate: string,
+  catalogs: Catalogs,
+  sourceEntry?: EntryRow | null,
+) {
+  const defaults = getCatalogDefaults(catalogs);
+  const entry = sourceEntry ?? null;
+
+  const insertResult = await supabase
+    .from("entry_drafts")
+    .insert({
+      body: entry?.body ?? "",
+      entry_date: entryDate,
+      is_active: true,
+      location_name: entry?.location_name ?? "서울, 대한민국",
+      mood_code: entry?.mood_code ?? defaults.defaultMood.code,
+      mood_label_snapshot:
+        entry?.mood_label_snapshot ?? defaults.defaultMood.label,
+      mood_score_snapshot:
+        entry?.mood_score_snapshot ?? defaults.defaultMood.trend_score,
+      paper_tint_code: entry?.paper_tint_code ?? defaults.defaultTint.code,
+      paper_tint_label_snapshot:
+        entry?.paper_tint_label_snapshot ?? defaults.defaultTint.label,
+      published_entry_id: entry?.id ?? null,
+      title: entry?.title ?? "",
+      user_id: userId,
+      weather_code: entry?.weather_code ?? defaults.defaultWeather.code,
+      weather_label_snapshot:
+        entry?.weather_label_snapshot ?? defaults.defaultWeather.label,
+    })
+    .select("*")
+    .single();
+
+  if (!insertResult.error && insertResult.data) {
+    return insertResult.data as DraftRow;
+  }
+
+  const duplicateDraft = await findDuplicateDraftAfterConflict(
+    supabase,
+    userId,
+    entryDate,
+  );
+
+  if (duplicateDraft) {
+    return repairDraftEntryLink(supabase, userId, duplicateDraft, entry);
+  }
+
+  throw insertResult.error;
+}
+
+async function findDuplicateDraftAfterConflict(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  entryDate: string,
+) {
+  for (const delayMs of draftLookupRetryDelaysMs) {
+    if (delayMs > 0) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+
+    const duplicateDraft = await getActiveDraftForDate(supabase, userId, entryDate);
+
+    if (duplicateDraft) {
+      return duplicateDraft;
+    }
+  }
+
+  return null;
 }
 
 function toEditorData(
   draft: DraftRow,
-  moods: MoodCatalogRow[],
-  weathers: WeatherCatalogRow[],
-  tints: PaperTintCatalogRow[],
+  catalogs: Catalogs,
   timezone: string,
 ): EditorData {
   return {
     dateLabel: formatKoreanEditorDate(draft.entry_date, timezone),
     draftId: draft.id,
+    entryDate: draft.entry_date,
     initialDraft: {
       body: draft.body,
       moodId: draft.mood_code,
@@ -158,30 +228,36 @@ function toEditorData(
       weatherId: draft.weather_code,
     },
     meta: {
-      initialStatusLabel: "초안 불러옴",
+      initialStatusLabel: "불러옴",
       locationLabel: draft.location_name ?? "서울, 대한민국",
       timeLabel: getCurrentKoreanTime(timezone),
     },
-    moodOptions: mapMoodOptions(moods),
-    paperTintOptions: mapTintOptions(tints),
-    subtitle: formatEnglishWeekdayPeriod(timezone),
+    moodOptions: mapMoodOptions(catalogs.moods),
+    paperTintOptions: mapTintOptions(catalogs.tints),
+    subtitle: formatEnglishWeekdayPeriodForDate(draft.entry_date, timezone),
     titlePlaceholder: "오늘의 제목...",
-    weatherOptions: mapWeatherOptions(weathers),
-    writingPlaceholder: "이곳에 당신의 진심을 담아보세요...",
+    weatherOptions: mapWeatherOptions(catalogs.weathers),
+    writingPlaceholder: "여기에 당신의 마음을 적어보세요...",
   };
 }
 
-export async function getEditorData(): Promise<EditorData> {
+export async function getEditorData(
+  selectedDate?: string,
+): Promise<EditorData> {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
 
-  const [profileResult, moodResult, weatherResult, tintResult] =
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("timezone")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const timezone = profile?.timezone ?? "Asia/Seoul";
+  const entryDate = selectedDate ?? getTodayIsoDate(timezone);
+
+  const [moodResult, weatherResult, tintResult, activeDraft, existingEntry] =
     await Promise.all([
-      supabase
-        .from("profiles")
-        .select("timezone")
-        .eq("id", user.id)
-        .maybeSingle(),
       supabase
         .from("mood_catalog")
         .select("*")
@@ -197,20 +273,34 @@ export async function getEditorData(): Promise<EditorData> {
         .select("*")
         .eq("is_active", true)
         .order("display_order"),
+      getActiveDraftForDate(supabase, user.id, entryDate),
+      getEntryForDate(supabase, user.id, entryDate),
     ]);
 
-  const timezone = profileResult.data?.timezone ?? "Asia/Seoul";
-  const moods = moodResult.data ?? [];
-  const weathers = weatherResult.data ?? [];
-  const tints = tintResult.data ?? [];
+  const catalogs: Catalogs = {
+    moods: moodResult.data ?? [],
+    tints: tintResult.data ?? [],
+    weathers: weatherResult.data ?? [],
+  };
 
-  const draft = await getOrCreateActiveDraft(
+  if (activeDraft) {
+    const repairedDraft = await repairDraftEntryLink(
+      supabase,
+      user.id,
+      activeDraft,
+      existingEntry,
+    );
+
+    return toEditorData(repairedDraft, catalogs, timezone);
+  }
+
+  const draft = await createDraftForDate(
+    supabase,
     user.id,
-    timezone,
-    moods,
-    weathers,
-    tints,
+    entryDate,
+    catalogs,
+    existingEntry,
   );
 
-  return toEditorData(draft, moods, weathers, tints, timezone);
+  return toEditorData(draft, catalogs, timezone);
 }
