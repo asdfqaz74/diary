@@ -14,7 +14,7 @@ export function WeatherPicker({
   selectedId,
 }: WeatherPickerProps) {
   return (
-    <div className="flex gap-4 md:flex-col">
+    <div className="flex flex-wrap justify-center gap-4 md:flex-col md:justify-start">
       {options.map((option) => {
         const isActive = option.id === selectedId;
 
@@ -43,9 +43,9 @@ export function WeatherPicker({
               name={option.icon}
               opticalSize={28}
             />
-            {/* {isActive ? (
+            {isActive ? (
               <span className="absolute -bottom-1 h-1.5 w-1.5 rounded-full bg-white" />
-            ) : null} */}
+            ) : null}
           </button>
         );
       })}

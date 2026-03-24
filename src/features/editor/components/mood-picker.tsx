@@ -13,7 +13,7 @@ export function MoodPicker({
   selectedId,
 }: MoodPickerProps) {
   return (
-    <div className="flex gap-4 md:flex-col">
+    <div className="flex flex-wrap justify-center gap-4 md:flex-col md:justify-start">
       {options.map((option) => {
         const isActive = option.id === selectedId;
 

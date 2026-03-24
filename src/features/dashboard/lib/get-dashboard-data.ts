@@ -17,8 +17,8 @@ import {
   toIsoDate,
 } from "@/lib/date";
 import { getPaperTintClasses } from "@/lib/paper-tint";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   CalendarMonth,
   DashboardData,
@@ -37,10 +37,10 @@ const quotes = [
   },
   {
     author: "고요한 기록가",
-    text: "풍경을 바라보다, 정직한 한 줄이 더 멀리 간다.",
+    text: "풍경을 바라보다, 정직한 문장이 더 멀리 간다.",
   },
   {
-    author: "오늘의 사색가",
+    author: "오늘의 산책가",
     text: "천천히 적은 문장은 오래 남는다.",
   },
 ];
@@ -144,6 +144,16 @@ function getStreakValue(streakCount: number) {
   return "첫 기록을 작성해보세요.";
 }
 
+function formatDisplayNameWithHonorific(displayName: string) {
+  const trimmedName = displayName.trim();
+
+  if (!trimmedName) {
+    return "기록자님";
+  }
+
+  return trimmedName.endsWith("님") ? trimmedName : `${trimmedName}님`;
+}
+
 export const getDashboardData = cache(async (): Promise<DashboardData> => {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
@@ -196,7 +206,7 @@ export const getDashboardData = cache(async (): Promise<DashboardData> => {
     user.user_metadata.full_name ||
     user.email?.split("@")[0] ||
     "기록자";
-
+  const displayNameWithHonorific = formatDisplayNameWithHonorific(displayName);
   const latestWeather = recentResult.data?.[0]?.weather_label_snapshot ?? "맑음";
   const streakCount = Number(streakResult ?? 0);
   const quote = quotes[streakCount % quotes.length];
@@ -216,8 +226,8 @@ export const getDashboardData = cache(async (): Promise<DashboardData> => {
     calendarMonths: monthDates.map((monthDate) =>
       buildCalendarMonth(monthDate, entryDates, todayIso),
     ),
-    dateLabel: `${formatKoreanLongDate(todayIso, timezone)} · ${latestWeather}`,
-    headline: `${getKoreanTimeGreeting(timezone)},\n${displayName}.`,
+    dateLabel: `${formatKoreanLongDate(todayIso, timezone)} • ${latestWeather}`,
+    headline: `${getKoreanTimeGreeting(timezone)},\n${displayNameWithHonorific}.`,
     moodTrend: mapMoodTrend(moodResult.data ?? [], todayIso),
     quoteAuthor: quote.author,
     quoteText: quote.text,

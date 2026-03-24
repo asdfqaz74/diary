@@ -26,8 +26,8 @@ describe("CalendarCard", () => {
       />,
     );
 
-    expect(screen.getByText("SUN")).toHaveClass("text-red-500");
-    expect(screen.getByText("SAT")).toHaveClass("text-blue-500");
+    expect(screen.getByText("SUN").parentElement).toHaveClass("text-red-500");
+    expect(screen.getByText("SAT").parentElement).toHaveClass("text-blue-500");
     expect(
       screen
         .getByRole("link", { name: "4일" })

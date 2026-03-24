@@ -13,7 +13,7 @@ export function PaperTintPicker({
   selectedId,
 }: PaperTintPickerProps) {
   return (
-    <div className="flex gap-3 md:mt-auto md:flex-col">
+    <div className="flex flex-wrap justify-center gap-3 md:mt-auto md:flex-col md:justify-start">
       {options.map((option) => {
         const isActive = option.id === selectedId;
 

@@ -34,7 +34,7 @@ const baseEditorData: EditorData = {
     moodId: "calm",
     tintId: "mist",
     title: "기존 제목",
-    weatherId: "clear",
+    weatherId: "clear_day",
   },
   meta: {
     initialStatusLabel: "불러옴",
@@ -52,8 +52,8 @@ const baseEditorData: EditorData = {
   ],
   subtitle: "TUESDAY AFTERNOON",
   titlePlaceholder: "오늘의 제목...",
-  weatherOptions: [{ icon: "clear_day", id: "clear", label: "맑음" }],
-  writingPlaceholder: "여기에 당신의 마음을 적어보세요...",
+  weatherOptions: [{ icon: "clear_day", id: "clear_day", label: "맑은 하늘" }],
+  writingPlaceholder: "이곳에 당신의 진심을 담아보세요...",
 };
 
 describe("EditorWorkspace", () => {
@@ -91,6 +91,28 @@ describe("EditorWorkspace", () => {
     expect(saveDraftChanges).not.toHaveBeenCalled();
   });
 
+  it("renders duplicated save actions and no logout button in the editor", () => {
+    render(
+      <EditorWorkspace
+        {...baseEditorData}
+        saveDraft={vi.fn(async () => ({ ok: true }))}
+        saveDraftChanges={vi.fn(async () => ({
+          ok: true,
+          statusLabel: "임시저장됨",
+        }))}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "로그아웃" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "임시저장" })).toHaveLength(3);
+    expect(screen.getAllByRole("button", { name: "저장하기" })).toHaveLength(3);
+    expect(
+      screen.getAllByRole("link", { name: "상세로 돌아가기" }),
+    ).toHaveLength(2);
+  });
+
   it("saves the current draft when 임시저장 is clicked", async () => {
     const saveDraftChanges = vi.fn(async () => ({
       ok: true,
@@ -109,7 +131,7 @@ describe("EditorWorkspace", () => {
       target: { value: "임시 제목" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "임시저장" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "임시저장" })[0]);
 
     await waitFor(() => {
       expect(saveDraftChanges).toHaveBeenCalledWith({
@@ -118,7 +140,7 @@ describe("EditorWorkspace", () => {
         moodId: "calm",
         tintId: "mist",
         title: "임시 제목",
-        weatherId: "clear",
+        weatherId: "clear_day",
       });
     });
 
@@ -146,7 +168,7 @@ describe("EditorWorkspace", () => {
       target: { value: "최종 저장할 본문" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "저장하기" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "저장하기" })[0]);
 
     await waitFor(() => {
       expect(saveDraft).toHaveBeenCalledWith({
@@ -155,7 +177,7 @@ describe("EditorWorkspace", () => {
         moodId: "calm",
         tintId: "mist",
         title: "기존 제목",
-        weatherId: "clear",
+        weatherId: "clear_day",
       });
     });
 

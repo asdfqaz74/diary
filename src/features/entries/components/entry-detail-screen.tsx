@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { LogoutButton } from "@/components/ui/logout-button";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import type { EntryDetailData } from "@/features/entries/types";
 
@@ -53,8 +52,7 @@ export function EntryDetailScreen({
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 self-start text-white md:self-auto">
-            <LogoutButton className="md:hidden" iconOnly />
+          <div className="flex w-full flex-wrap items-center justify-center gap-3 self-center text-white md:w-auto md:justify-end md:self-auto">
             <ActionLink
               href={data.editHref}
               icon={data.kind === "entry" ? "edit" : "add"}
@@ -124,7 +122,7 @@ export function EntryDetailScreen({
               과거와 미래 날짜도 자유롭게 남길 수 있습니다. 이 날짜에 첫 기록을
               쓰고 싶다면 바로 작성 화면으로 이동해 보세요.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
               <ActionLink
                 href={data.editHref}
                 icon="edit_note"

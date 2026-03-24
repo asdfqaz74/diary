@@ -60,8 +60,8 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
   }
 
   return (
-    <Card className="p-8 md:p-10 lg:p-12" tone="paper">
-      <div className="mb-10 flex items-center justify-between gap-4">
+    <Card className="p-6 md:p-10 lg:p-12" tone="paper">
+      <div className="mb-8 flex items-center justify-between gap-4 md:mb-10">
         <div>
           <h3 className="font-headline text-3xl font-bold tracking-tight text-primary">
             {activeMonth.label}
@@ -92,7 +92,7 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-y-8 text-center">
+      <div className="grid grid-cols-7 gap-y-6 text-center md:gap-y-8">
         {activeMonth.weekdayLabels.map((weekday, index) => (
           <div
             key={weekday}
@@ -101,7 +101,8 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
               getWeekdayLabelClass(index),
             )}
           >
-            {weekday}
+            <span className="md:hidden">{weekday.slice(0, 1)}</span>
+            <span className="hidden md:inline">{weekday}</span>
           </div>
         ))}
 
@@ -112,12 +113,15 @@ export function CalendarCard({ initialMonthIndex, months }: CalendarCardProps) {
             : `${day.dayNumber}일`;
 
           return (
-            <div key={day.key} className="flex h-20 items-center justify-center">
+            <div
+              key={day.key}
+              className="flex h-16 items-center justify-center md:h-20"
+            >
               <Link
                 aria-label={ariaLabel}
                 href={`/entries/${day.key}`}
                 className={cn(
-                  "relative flex h-14 w-14 items-center justify-center rounded-[1.15rem] text-2xl transition",
+                  "relative flex h-12 w-12 items-center justify-center rounded-[1rem] text-xl transition md:h-14 md:w-14 md:rounded-[1.15rem] md:text-2xl",
                   day.isActive
                     ? "ambient-shadow bg-primary"
                     : "bg-transparent hover:bg-surface-container-low",

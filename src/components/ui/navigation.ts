@@ -18,28 +18,14 @@ export const sidebarItems: NavItem[] = [
     icon: "book_2",
     label: "내 일기",
   },
-  {
-    activeOn: "none",
-    disabled: true,
-    href: "#",
-    icon: "calendar_month",
-    label: "달력",
-  },
-  {
-    activeOn: "none",
-    disabled: true,
-    href: "#",
-    icon: "settings",
-    label: "설정",
-  },
 ];
 
 export const bottomNavItems: NavItem[] = [
   {
     activeOn: "records",
     href: "/",
-    icon: "article",
-    label: "기록",
+    icon: "home",
+    label: "홈",
   },
   {
     activeOn: "compose",

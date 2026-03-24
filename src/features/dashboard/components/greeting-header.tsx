@@ -17,7 +17,7 @@ export function GreetingHeader({
   return (
     <header className="mb-12 flex flex-col justify-between gap-8 xl:flex-row xl:items-start">
       <div className="max-w-3xl">
-        <h2 className="font-headline text-5xl font-black leading-[1.05] tracking-tight text-on-surface md:text-7xl">
+        <h2 className="font-headline text-4xl font-black leading-[1.05] tracking-tight text-on-surface md:text-7xl">
           {headlineLead}
           <br />
           <span className="italic text-primary">{headlineAccent}</span>

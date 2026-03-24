@@ -26,17 +26,17 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <>
       <SidebarNav pathname={pathname} />
-      <div className="min-h-screen pb-28 md:pl-88 md:pb-0">{children}</div>
+      <div className="min-h-screen pb-36 md:pl-88 md:pb-0">{children}</div>
       <BottomNav pathname={pathname} />
       {showDashboardFab ? (
         <FloatingActionButton
           href="/entries/new"
           icon="edit_note"
-          label="오늘의 일기"
+          label="오늘 일기"
         />
       ) : null}
       {isComposeRoute(pathname) ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-16 bg-linear-to-t from-background to-transparent md:hidden" />
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-24 bg-linear-to-t from-background via-background/70 to-transparent md:hidden" />
       ) : null}
     </>
   );

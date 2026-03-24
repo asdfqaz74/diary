@@ -26,7 +26,7 @@ export function JournalPaper({
   return (
     <div
       className={cn(
-        "paper-texture flex min-h-176 flex-1 flex-col rounded-tr-2xl p-8 md:p-12",
+        "paper-texture flex min-h-[44rem] flex-1 flex-col p-8 md:p-12",
         paperClassName,
       )}
     >

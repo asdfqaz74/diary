@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { EditorActionButtons } from "@/features/editor/components/editor-action-buttons";
 import { EditorHeader } from "@/features/editor/components/editor-header";
 import { JournalPaper } from "@/features/editor/components/journal-paper";
 import { MoodPicker } from "@/features/editor/components/mood-picker";
@@ -126,9 +127,43 @@ export function EditorWorkspace({
       ) : null}
 
       <Card className="overflow-hidden" tone="paper">
+        <div className="border-b border-white/8 bg-primary/92 px-5 py-6 md:hidden">
+          <div className="space-y-6">
+            <div className="flex flex-col items-center gap-3">
+              <MoodPicker
+                onSelect={(moodId) => {
+                  updateDraft("moodId", moodId);
+                }}
+                options={moodOptions}
+                selectedId={draft.moodId}
+              />
+            </div>
+
+            <div className="flex flex-col items-center gap-3">
+              <WeatherPicker
+                onSelect={(weatherId) => {
+                  updateDraft("weatherId", weatherId);
+                }}
+                options={weatherOptions}
+                selectedId={draft.weatherId}
+              />
+            </div>
+
+            <div className="flex flex-col items-center gap-3">
+              <PaperTintPicker
+                onSelect={(tintId) => {
+                  updateDraft("tintId", tintId);
+                }}
+                options={paperTintOptions}
+                selectedId={draft.tintId}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row">
-          <aside className="flex w-full items-start justify-between gap-8 bg-mist-600 px-6 py-8 md:w-24 md:flex-col md:justify-start md:px-0 md:py-10">
-            <div className="mx-auto flex flex-col gap-8">
+          <aside className="hidden w-24 shrink-0 flex-col items-center justify-between bg-primary/92 py-10 md:flex">
+            <div className="flex flex-col items-center gap-8">
               <MoodPicker
                 onSelect={(moodId) => {
                   updateDraft("moodId", moodId);
@@ -146,15 +181,13 @@ export function EditorWorkspace({
               />
             </div>
 
-            <div className="mx-auto">
-              <PaperTintPicker
-                onSelect={(tintId) => {
-                  updateDraft("tintId", tintId);
-                }}
-                options={paperTintOptions}
-                selectedId={draft.tintId}
-              />
-            </div>
+            <PaperTintPicker
+              onSelect={(tintId) => {
+                updateDraft("tintId", tintId);
+              }}
+              options={paperTintOptions}
+              selectedId={draft.tintId}
+            />
           </aside>
 
           <JournalPaper
@@ -173,6 +206,17 @@ export function EditorWorkspace({
           />
         </div>
       </Card>
+
+      <div className="mt-4 md:hidden">
+        <EditorActionButtons
+          className="w-full"
+          isSavingDraftChanges={isSavingDraftChanges}
+          isSavingEntry={isSavingEntry}
+          onSave={handleSave}
+          onSaveDraftChanges={handleSaveDraftChanges}
+          stretch
+        />
+      </div>
     </>
   );
 }
