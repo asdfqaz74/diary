@@ -1,157 +1,221 @@
+import "server-only";
+
 import { cache } from "react";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth";
+import {
+  addDays,
+  addMonths,
+  endOfMonth,
+  formatEnglishDateLabel,
+  formatKoreanLongDate,
+  formatMonthTitle,
+  getDayDifference,
+  getKoreanTimeGreeting,
+  getTodayIsoDate,
+  parseIsoDate,
+  startOfMonth,
+  toIsoDate,
+} from "@/lib/date";
+import type { Database } from "@/lib/supabase/database.types";
 import type {
   CalendarMonth,
   DashboardData,
+  DiaryEntryPreview,
+  MoodTrendPoint,
 } from "@/features/dashboard/types";
+
+type EntryRow = Database["public"]["Tables"]["entries"]["Row"];
 
 const weekdayLabels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-const calendarMonths: CalendarMonth[] = [
+const quotes = [
   {
-    monthKey: "2024-05",
-    label: "5월의 기록",
-    weekdayLabels,
-    days: [
-      { key: "m5-28", dayNumber: 28, isMuted: true },
-      { key: "m5-29", dayNumber: 29, isMuted: true },
-      { key: "m5-30", dayNumber: 30, isMuted: true },
-      { key: "m5-1", dayNumber: 1, hasEntry: true },
-      { key: "m5-2", dayNumber: 2 },
-      { key: "m5-3", dayNumber: 3, hasEntry: true },
-      { key: "m5-4", dayNumber: 4 },
-      { key: "m5-5", dayNumber: 5, hasEntry: true },
-      { key: "m5-6", dayNumber: 6 },
-      { key: "m5-7", dayNumber: 7, hasEntry: true },
-      { key: "m5-8", dayNumber: 8, hasEntry: true },
-      { key: "m5-9", dayNumber: 9, hasEntry: true },
-      { key: "m5-10", dayNumber: 10, hasEntry: true },
-      { key: "m5-11", dayNumber: 11, hasEntry: true },
-      { key: "m5-12", dayNumber: 12, hasEntry: true },
-      { key: "m5-13", dayNumber: 13, hasEntry: true },
-      { key: "m5-14", dayNumber: 14, hasEntry: true },
-      { key: "m5-15", dayNumber: 15, hasEntry: true },
-      { key: "m5-16", dayNumber: 16, hasEntry: true },
-      { key: "m5-17", dayNumber: 17, hasEntry: true },
-      { key: "m5-18", dayNumber: 18, hasEntry: true },
-      { key: "m5-19", dayNumber: 19, hasEntry: true },
-      { key: "m5-20", dayNumber: 20, hasEntry: true },
-      { key: "m5-21", dayNumber: 21, hasEntry: true },
-      { key: "m5-22", dayNumber: 22, hasEntry: true },
-      { key: "m5-23", dayNumber: 23, hasEntry: true },
-      { key: "m5-24", dayNumber: 24, hasEntry: true, isActive: true },
-      { key: "m5-25", dayNumber: 25 },
-    ],
+    author: "무명의 명상가",
+    text: "마음이 흔들릴 때 비로소\n내가 보인다.",
   },
   {
-    monthKey: "2024-06",
-    label: "6월의 기록",
-    weekdayLabels,
-    days: [
-      { key: "m6-26", dayNumber: 26, isMuted: true },
-      { key: "m6-27", dayNumber: 27, isMuted: true },
-      { key: "m6-28", dayNumber: 28, isMuted: true },
-      { key: "m6-29", dayNumber: 29, isMuted: true },
-      { key: "m6-30", dayNumber: 30, isMuted: true },
-      { key: "m6-31", dayNumber: 31, isMuted: true },
-      { key: "m6-1", dayNumber: 1, hasEntry: true },
-      { key: "m6-2", dayNumber: 2, hasEntry: true },
-      { key: "m6-3", dayNumber: 3 },
-      { key: "m6-4", dayNumber: 4, hasEntry: true },
-      { key: "m6-5", dayNumber: 5 },
-      { key: "m6-6", dayNumber: 6, hasEntry: true },
-      { key: "m6-7", dayNumber: 7 },
-      { key: "m6-8", dayNumber: 8, hasEntry: true },
-      { key: "m6-9", dayNumber: 9, hasEntry: true },
-      { key: "m6-10", dayNumber: 10, hasEntry: true },
-      { key: "m6-11", dayNumber: 11 },
-      { key: "m6-12", dayNumber: 12, hasEntry: true },
-      { key: "m6-13", dayNumber: 13, hasEntry: true },
-      { key: "m6-14", dayNumber: 14 },
-      { key: "m6-15", dayNumber: 15, hasEntry: true },
-      { key: "m6-16", dayNumber: 16, hasEntry: true },
-      { key: "m6-17", dayNumber: 17 },
-      { key: "m6-18", dayNumber: 18, hasEntry: true, isActive: true },
-      { key: "m6-19", dayNumber: 19, hasEntry: true },
-      { key: "m6-20", dayNumber: 20, hasEntry: true },
-      { key: "m6-21", dayNumber: 21 },
-      { key: "m6-22", dayNumber: 22 },
-    ],
+    author: "느린 기록가",
+    text: "고요함은 답을 주기보다\n질문을 또렷하게 만든다.",
   },
   {
-    monthKey: "2024-07",
-    label: "7월의 기록",
-    weekdayLabels,
-    days: [
-      { key: "m7-30", dayNumber: 30, isMuted: true },
-      { key: "m7-1", dayNumber: 1, hasEntry: true },
-      { key: "m7-2", dayNumber: 2 },
-      { key: "m7-3", dayNumber: 3, hasEntry: true },
-      { key: "m7-4", dayNumber: 4 },
-      { key: "m7-5", dayNumber: 5, hasEntry: true },
-      { key: "m7-6", dayNumber: 6 },
-      { key: "m7-7", dayNumber: 7, hasEntry: true },
-      { key: "m7-8", dayNumber: 8, isActive: true, hasEntry: true },
-      { key: "m7-9", dayNumber: 9 },
-      { key: "m7-10", dayNumber: 10, hasEntry: true },
-      { key: "m7-11", dayNumber: 11 },
-      { key: "m7-12", dayNumber: 12, hasEntry: true },
-      { key: "m7-13", dayNumber: 13 },
-      { key: "m7-14", dayNumber: 14, hasEntry: true },
-      { key: "m7-15", dayNumber: 15, hasEntry: true },
-      { key: "m7-16", dayNumber: 16 },
-      { key: "m7-17", dayNumber: 17, hasEntry: true },
-      { key: "m7-18", dayNumber: 18 },
-      { key: "m7-19", dayNumber: 19, hasEntry: true },
-      { key: "m7-20", dayNumber: 20, hasEntry: true },
-      { key: "m7-21", dayNumber: 21 },
-      { key: "m7-22", dayNumber: 22, hasEntry: true },
-      { key: "m7-23", dayNumber: 23 },
-      { key: "m7-24", dayNumber: 24, hasEntry: true },
-      { key: "m7-25", dayNumber: 25 },
-      { key: "m7-26", dayNumber: 26, hasEntry: true },
-      { key: "m7-27", dayNumber: 27 },
-    ],
+    author: "새벽 산책자",
+    text: "짧은 호흡 하나가\n긴 하루를 바꾼다.",
   },
 ];
 
-const dashboardData: DashboardData = {
-  headline: "평온한 오후입니다,\n진수님.",
-  dateLabel: "2024년 5월 24일 금요일 • 흐림",
-  streak: {
-    value: "7일 연속 일기 쓰기 성공!",
-    label: "WEEKLY STREAK",
-    statLabel: "🔥",
-  },
-  calendarMonths,
-  moodTrend: [
-    { dayLabel: "어제", moodLabel: "평온함", icon: "sentiment_satisfied", intensity: 42 },
-    { dayLabel: "그저께", moodLabel: "활기참", icon: "sentiment_very_satisfied", intensity: 60 },
-    { dayLabel: "3일 전", moodLabel: "정돈됨", icon: "sentiment_satisfied", intensity: 88 },
-    { dayLabel: "4일 전", moodLabel: "잔잔함", icon: "sentiment_neutral", intensity: 50 },
-    { dayLabel: "5일 전", moodLabel: "가벼움", icon: "sentiment_satisfied", intensity: 75 },
-    { dayLabel: "6일 전", moodLabel: "멈춤", icon: "sentiment_neutral", intensity: 32 },
-    { dayLabel: "7일 전", moodLabel: "집중", icon: "sentiment_very_satisfied", intensity: 94 },
-  ],
-  quoteText: "마음이 흔들릴 때 비로소\n내가 보인다.",
-  quoteAuthor: "무명의 명상가",
-  recentEntries: [
-    {
-      dateLabel: "MAY 23, 2024",
-      title: "비 오는 날의 숲속 산책",
-      excerpt:
-        "오늘은 비가 내렸다. 창밖으로 들리는 빗소리가 마음을 차분하게 가라앉혀주었다. 커피 한 잔의 온기가 손바닥을 통해 전해질 때, 한 박자 느리게 숨을 고르게 되었다.",
-      icon: "bookmark",
-    },
-    {
-      dateLabel: "MAY 22, 2024",
-      title: "새로운 시작을 위한 명상",
-      excerpt:
-        "복잡했던 생각들을 정리하고 나니 한결 가벼워졌다. 호흡에 집중하며 내 안의 고요함을 찾아가는 시간은 언제나 소중하다. 오늘의 메모는 서두르지 않는 법을 다시 상기시켰다.",
-      icon: "favorite",
-    },
-  ],
-};
+function trimExcerpt(value: string, maxLength = 110) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength).trimEnd()}...`;
+}
+
+function buildCalendarMonth(
+  monthDate: Date,
+  entryDates: Set<string>,
+  activeDate: string,
+): CalendarMonth {
+  const monthStart = startOfMonth(monthDate);
+  const monthEnd = endOfMonth(monthDate);
+  const gridStart = addDays(monthStart, -monthStart.getUTCDay());
+  const gridEnd = addDays(monthEnd, 6 - monthEnd.getUTCDay());
+  const days = [];
+
+  for (
+    let current = gridStart;
+    current <= gridEnd;
+    current = addDays(current, 1)
+  ) {
+    const isoDate = toIsoDate(current);
+
+    days.push({
+      dayNumber: current.getUTCDate(),
+      hasEntry: entryDates.has(isoDate),
+      isActive: isoDate === activeDate,
+      isMuted: current.getUTCMonth() !== monthStart.getUTCMonth(),
+      key: isoDate,
+    });
+  }
+
+  return {
+    days,
+    label: formatMonthTitle(monthStart),
+    monthKey: `${monthStart.getUTCFullYear()}-${String(
+      monthStart.getUTCMonth() + 1,
+    ).padStart(2, "0")}`,
+    weekdayLabels,
+  };
+}
+
+function getRelativeDayLabel(entryDate: string, todayIso: string) {
+  const diff = getDayDifference(todayIso, entryDate);
+
+  if (diff === 1) {
+    return "어제";
+  }
+
+  if (diff === 2) {
+    return "그제";
+  }
+
+  if (diff <= 7) {
+    return `${diff}일 전`;
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    day: "numeric",
+    month: "numeric",
+    timeZone: "UTC",
+  }).format(parseIsoDate(entryDate));
+}
+
+function mapMoodTrend(entries: EntryRow[], todayIso: string): MoodTrendPoint[] {
+  return entries.map((entry) => ({
+    dayLabel: getRelativeDayLabel(entry.entry_date, todayIso),
+    icon:
+      entry.mood_score_snapshot >= 75
+        ? "sentiment_very_satisfied"
+        : entry.mood_score_snapshot >= 45
+          ? "sentiment_satisfied"
+          : "sentiment_neutral",
+    intensity: entry.mood_score_snapshot,
+    moodLabel: entry.mood_label_snapshot,
+  }));
+}
+
+function mapRecentEntries(entries: EntryRow[]): DiaryEntryPreview[] {
+  return entries.map((entry) => ({
+    dateLabel: formatEnglishDateLabel(entry.entry_date),
+    excerpt: trimExcerpt(entry.body),
+    icon: entry.is_favorite ? "favorite" : "bookmark",
+    title: entry.title || "제목 없는 기록",
+  }));
+}
+
+function getStreakValue(streakCount: number) {
+  if (streakCount > 0) {
+    return `${streakCount}일 연속 일기 쓰기 성공!`;
+  }
+
+  return "첫 기록을 남겨보세요";
+}
 
 export const getDashboardData = cache(async (): Promise<DashboardData> => {
-  return dashboardData;
+  const user = await requireUser();
+  const supabase = await createSupabaseServerClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, timezone")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const timezone = profile?.timezone ?? "Asia/Seoul";
+  const todayIso = getTodayIsoDate(timezone);
+  const currentMonth = startOfMonth(parseIsoDate(todayIso));
+  const monthDates = [-1, 0, 1].map((offset) => addMonths(currentMonth, offset));
+  const calendarRangeStart = toIsoDate(addDays(startOfMonth(monthDates[0]), -6));
+  const calendarRangeEnd = toIsoDate(addDays(endOfMonth(monthDates[2]), 6));
+
+  const [calendarResult, recentResult, moodResult, streakResult] =
+    await Promise.all([
+      supabase
+        .from("entries")
+        .select("entry_date")
+        .eq("user_id", user.id)
+        .gte("entry_date", calendarRangeStart)
+        .lte("entry_date", calendarRangeEnd)
+        .order("entry_date"),
+      supabase
+        .from("entries")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("entry_date", { ascending: false })
+        .limit(2),
+      supabase
+        .from("entries")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("entry_date", { ascending: false })
+        .limit(7),
+      supabase.rpc("calculate_current_streak", {
+        p_as_of: todayIso,
+        p_user_id: user.id,
+      }),
+    ]);
+
+  const displayName =
+    profile?.display_name ||
+    user.user_metadata.full_name ||
+    user.email?.split("@")[0] ||
+    "기록자";
+
+  const latestWeather =
+    recentResult.data?.[0]?.weather_label_snapshot ?? "마음을 들여다보기 좋은 날";
+  const streakCount = Number(streakResult.data ?? 0);
+  const quote = quotes[streakCount % quotes.length];
+  const entryDates = new Set(
+    (calendarResult.data ?? []).map((entry) => entry.entry_date),
+  );
+
+  return {
+    calendarMonths: monthDates.map((monthDate) =>
+      buildCalendarMonth(monthDate, entryDates, todayIso),
+    ),
+    dateLabel: `${formatKoreanLongDate(todayIso, timezone)} · ${latestWeather}`,
+    headline: `${getKoreanTimeGreeting(timezone)},\n${displayName}.`,
+    moodTrend: mapMoodTrend(moodResult.data ?? [], todayIso),
+    quoteAuthor: quote.author,
+    quoteText: quote.text,
+    recentEntries: mapRecentEntries(recentResult.data ?? []),
+    streak: {
+      label: "WEEKLY STREAK",
+      statLabel: "🔥",
+      value: getStreakValue(streakCount),
+    },
+  };
 });

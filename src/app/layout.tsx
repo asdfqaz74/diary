@@ -18,7 +18,7 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "명상 메모아",
-  description: "아날로그 저널 감성으로 기록하는 명상 일기 앱.",
+  description: "Supabase 인증과 기록 보관이 연결된 명상 다이어리 앱",
 };
 
 export default function RootLayout({

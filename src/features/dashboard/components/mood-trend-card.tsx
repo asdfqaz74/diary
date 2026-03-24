@@ -15,47 +15,56 @@ export function MoodTrendCard({ points }: MoodTrendCardProps) {
         최근의 기분 흐름
       </h3>
 
-      <div className="mt-8 space-y-6">
-        {recentRows.map((point) => (
-          <div
-            key={point.dayLabel}
-            className="flex items-center justify-between gap-4"
-          >
-            <span className="font-label text-lg text-on-surface-variant">
-              {point.dayLabel}
-            </span>
-            <div className="flex items-center gap-2 text-primary">
-              <MaterialSymbol
-                filled
-                name={point.icon}
-                opticalSize={28}
-                weight={500}
-              />
-              <span className="text-xl">{point.moodLabel}</span>
-            </div>
+      {points.length === 0 ? (
+        <p className="mt-8 text-base leading-7 text-on-surface-variant">
+          아직 분석할 기록이 없습니다. 첫 일기를 저장하면 감정 흐름이 여기에
+          쌓입니다.
+        </p>
+      ) : (
+        <>
+          <div className="mt-8 space-y-6">
+            {recentRows.map((point) => (
+              <div
+                key={point.dayLabel}
+                className="flex items-center justify-between gap-4"
+              >
+                <span className="font-label text-lg text-on-surface-variant">
+                  {point.dayLabel}
+                </span>
+                <div className="flex items-center gap-2 text-primary">
+                  <MaterialSymbol
+                    filled
+                    name={point.icon}
+                    opticalSize={28}
+                    weight={500}
+                  />
+                  <span className="text-xl">{point.moodLabel}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="mt-10 flex h-28 items-end gap-2 px-2">
-        {points.map((point, index) => {
-          const barClass =
-            index === 2 || index === points.length - 1
-              ? "bg-primary"
-              : index % 2 === 0
-                ? "bg-primary/18"
-                : "bg-primary/42";
+          <div className="mt-10 flex h-28 items-end gap-2 px-2">
+            {points.map((point, index) => {
+              const barClass =
+                index === 2 || index === points.length - 1
+                  ? "bg-primary"
+                  : index % 2 === 0
+                    ? "bg-primary/18"
+                    : "bg-primary/42";
 
-          return (
-            <div
-              key={`${point.dayLabel}-${point.intensity}`}
-              aria-label={`${point.dayLabel}의 기분 강도 ${point.intensity}`}
-              className={`w-full rounded-t-sm ${barClass}`}
-              style={{ height: `${point.intensity}%` }}
-            />
-          );
-        })}
-      </div>
+              return (
+                <div
+                  key={`${point.dayLabel}-${point.intensity}`}
+                  aria-label={`${point.dayLabel} 기분 강도 ${point.intensity}`}
+                  className={`w-full rounded-t-sm ${barClass}`}
+                  style={{ height: `${point.intensity}%` }}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
     </Card>
   );
 }

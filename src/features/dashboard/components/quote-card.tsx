@@ -19,7 +19,9 @@ export function QuoteCard({ author, quote }: QuoteCardProps) {
       <p className="max-w-xs whitespace-pre-line font-headline text-3xl italic leading-[1.55] text-on-primary">
         {quote}
       </p>
-      <p className="mt-6 font-label text-lg text-on-primary/70">— {author}</p>
+      <p className="mt-6 font-label text-lg text-on-primary/70">
+        글 · {author}
+      </p>
     </Card>
   );
 }

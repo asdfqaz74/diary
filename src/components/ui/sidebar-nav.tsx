@@ -18,7 +18,7 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
   const isCompose = isComposeRoute(pathname);
 
   return (
-    <aside className="ambient-shadow fixed inset-y-0 left-0 z-30 hidden w-[22rem] flex-col rounded-r-[1.75rem] bg-surface-container px-8 py-8 md:flex">
+    <aside className="ambient-shadow fixed inset-y-0 left-0 z-30 hidden w-88 flex-col rounded-r-[1.75rem] bg-surface-container px-8 py-8 md:flex">
       <div className="space-y-2">
         <h1 className="font-headline text-[2rem] font-bold tracking-[0.22em] text-primary">
           명상 메모아
@@ -30,11 +30,11 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
 
       <div className="mt-12 flex items-center gap-4 rounded-[1.75rem] bg-surface px-5 py-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f7dfab] text-2xl">
-          🪷
+          🧘
         </div>
         <div>
           <p className="text-lg font-bold text-primary">
-            오늘의 마음을 기록해보세요
+            오늘의 마음을 기록해요
           </p>
           <p className="font-label text-sm text-on-surface-variant">
             기록 전문가

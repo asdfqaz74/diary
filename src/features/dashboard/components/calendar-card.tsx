@@ -31,7 +31,7 @@ export function CalendarCard({ months }: CalendarCardProps) {
             {activeMonth.label}
           </h3>
           <p className="mt-2 font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant">
-            {isPending ? "달력을 정리하는 중" : "마음을 남긴 날들을 모아둔 달력"}
+            {isPending ? "달력을 불러오는 중" : "기록이 남아 있는 날짜를 살펴보세요"}
           </p>
         </div>
         <div className="flex gap-2">

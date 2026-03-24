@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card";
 import { CalendarCard } from "@/features/dashboard/components/calendar-card";
 import { EntryPreviewCard } from "@/features/dashboard/components/entry-preview-card";
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
@@ -25,15 +26,27 @@ export async function DashboardScreen() {
               <h3 className="ml-4 font-headline text-4xl font-bold text-primary">
                 최근 기록들
               </h3>
-              <div className="mt-10 grid gap-10 xl:grid-cols-2">
-                {data.recentEntries.map((entry, index) => (
-                  <EntryPreviewCard
-                    key={entry.dateLabel}
-                    index={index}
-                    preview={entry}
-                  />
-                ))}
-              </div>
+              {data.recentEntries.length > 0 ? (
+                <div className="mt-10 grid gap-10 xl:grid-cols-2">
+                  {data.recentEntries.map((entry, index) => (
+                    <EntryPreviewCard
+                      key={`${entry.dateLabel}-${entry.title}`}
+                      index={index}
+                      preview={entry}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card className="mt-10 p-10" tone="paper">
+                  <h4 className="font-headline text-3xl font-bold text-on-surface">
+                    아직 저장된 기록이 없습니다
+                  </h4>
+                  <p className="mt-4 max-w-2xl text-lg leading-8 text-on-surface-variant">
+                    오른쪽 아래의 버튼이나 새 일기 쓰기 메뉴로 들어가 첫 기록을
+                    남겨보세요.
+                  </p>
+                </Card>
+              )}
             </section>
           </div>
 

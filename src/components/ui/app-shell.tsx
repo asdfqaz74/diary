@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import {
+  isAuthRoute,
   isComposeRoute,
   isHomeRoute,
 } from "@/components/ui/navigation";
@@ -15,12 +16,17 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+
+  if (isAuthRoute(pathname)) {
+    return <>{children}</>;
+  }
+
   const showDashboardFab = isHomeRoute(pathname);
 
   return (
     <>
       <SidebarNav pathname={pathname} />
-      <div className="min-h-screen pb-28 md:pl-[22rem] md:pb-0">{children}</div>
+      <div className="min-h-screen pb-28 md:pl-88 md:pb-0">{children}</div>
       <BottomNav pathname={pathname} />
       {showDashboardFab ? (
         <FloatingActionButton
@@ -30,7 +36,7 @@ export function AppShell({ children }: AppShellProps) {
         />
       ) : null}
       {isComposeRoute(pathname) ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent md:hidden" />
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-16 bg-linear-to-t from-background to-transparent md:hidden" />
       ) : null}
     </>
   );

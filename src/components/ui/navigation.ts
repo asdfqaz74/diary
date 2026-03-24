@@ -29,12 +29,12 @@ export const bottomNavItems: NavItem[] = [
   {
     href: "/entries/new",
     icon: "edit_note",
-    label: "새 일기",
+    label: "쓰기",
   },
   {
     href: "/",
     icon: "grid_view",
-    label: "내 일기",
+    label: "기록",
   },
   {
     disabled: true,
@@ -50,6 +50,10 @@ export function isHomeRoute(pathname: string) {
 
 export function isComposeRoute(pathname: string) {
   return pathname.startsWith("/entries/new");
+}
+
+export function isAuthRoute(pathname: string) {
+  return pathname.startsWith("/login") || pathname.startsWith("/auth");
 }
 
 export function isNavItemActive(item: NavItem, pathname: string) {

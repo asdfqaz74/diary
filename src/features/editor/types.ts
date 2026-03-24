@@ -33,6 +33,7 @@ export type EditorMeta = {
 
 export type EditorData = {
   dateLabel: string;
+  draftId: string;
   initialDraft: JournalDraft;
   meta: EditorMeta;
   moodOptions: MoodOption[];
@@ -42,3 +43,31 @@ export type EditorData = {
   weatherOptions: WeatherOption[];
   writingPlaceholder: string;
 };
+
+export type AutosaveDraftInput = JournalDraft & {
+  draftId: string;
+};
+
+export type AutosaveDraftResult = {
+  message?: string;
+  ok: boolean;
+  statusLabel: string;
+};
+
+export type PublishDraftInput = {
+  draftId: string;
+};
+
+export type PublishDraftResult = {
+  message?: string;
+  ok: boolean;
+  redirectTo?: string;
+};
+
+export type AutosaveDraftAction = (
+  input: AutosaveDraftInput,
+) => Promise<AutosaveDraftResult>;
+
+export type PublishDraftAction = (
+  input: PublishDraftInput,
+) => Promise<PublishDraftResult>;
